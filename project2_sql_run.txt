@@ -1,0 +1,87 @@
+CREATE TABLE Departments( 
+    Name VARCHAR(100) NOT NULL,
+    Abbreviation VARCHAR(4) NOT NULL,
+    PRIMARY KEY(Abbreviation));
+
+CREATE TABLE Courses(
+    Name VARCHAR(100) NOT NULL,
+    Number INT(4) UNSIGNED ZEROFILL NOT NULL,
+    Catalog_ID INT(5) ZEROFILL AUTO_INCREMENT NOT NULL,
+    Department VARCHAR(4) NOT NULL,
+    PRIMARY KEY(Catalog_ID),
+    FOREIGN KEY (Department) REFERENCES Departments(Abbreviation),
+    UNIQUE(Name, Number, Department));
+
+CREATE TABLE Professors(
+    uID CHAR(8) NOT NULL,
+    First_Name VARCHAR(100) NOT NULL,
+    Last_Name VARCHAR(100) NOT NULL,
+    Birth_Date DATE NOT NULL,
+    Department VARCHAR(4) NOT NULL, 
+    PRIMARY KEY(uID), 
+    FOREIGN KEY (Department) REFERENCES Departments(Abbreviation));
+
+CREATE TABLE Students(
+    uID CHAR(8) NOT NULL, 
+    First_Name VARCHAR(100) NOT NULL, 
+    Last_Name VARCHAR(100) NOT NULL, 
+    Birth_Date DATE NOT NULL, 
+    Department VARCHAR(4) NOT NULL, 
+    PRIMARY KEY(uID), 
+    FOREIGN KEY (Department) REFERENCES Departments(Abbreviation));
+
+CREATE TABLE Administrators(
+    uID CHAR(8) NOT NULL, 
+    First_Name VARCHAR(100) NOT NULL, 
+    Last_Name VARCHAR(100) NOT NULL, 
+    Birth_Date DATE NOT NULL, 
+    PRIMARY KEY(uID));
+
+CREATE TABLE Classes(
+    Semester VARCHAR(10) NOT NULL, 
+    Location VARCHAR(100) NOT NULL, 
+    Start_Time TIME NOT NULL, 
+    End_Time TIME NOT NULL, 
+    Professor CHAR(8), 
+    Catalog_ID INT(5) UNSIGNED ZEROFILL NOT NULL, 
+    PRIMARY KEY(Catalog_ID, Semester), 
+    Foreign KEY (Catalog_ID) REFERENCES Courses(Catalog_ID), 
+    Foreign Key (Professor) REFERENCES Professors(uID) ON DELETE SET NULL );
+
+CREATE TABLE Enrollments(
+    Catalog_ID INT(5) UNSIGNED ZEROFILL NOT NULL, 
+    Semester VARCHAR(10) NOT NULL, 
+    Grade VARCHAR(2), uID CHAR(8) NOT NULL, 
+    PRIMARY KEY(Catalog_ID, Semester, uID), 
+    FOREIGN KEY (Catalog_ID, Semester) REFERENCES Classes(Catalog_ID, Semester), 
+    FOREIGN KEY (uID) REFERENCES Students(uID) ON DELETE CASCADE);
+
+CREATE TABLE Assignment_Categories(
+    Category_ID INT UNSIGNED NOT NULL,
+    Catalog_ID INT(5) UNSIGNED ZEROFILL NOT NULL,
+    Semester VARCHAR(10) NOT NULL,
+    Name VARCHAR(100) NOT NULL,
+    Weight TINYINT NOT NULL, 
+    PRIMARY KEY (Category_ID, Catalog_ID, Semester),
+    UNIQUE(Category_ID),
+    FOREIGN KEY (Catalog_ID, Semester) REFERENCES Classes(Catalog_ID, Semester) ON DELETE CASCADE );
+
+CREATE TABLE Assignments(
+    Assignment_ID INT UNSIGNED NOT NULL,
+    Category_ID INT UNSIGNED NOT NULL,
+    Name VARCHAR(100) NOT NULL,
+    Max_Points INT UNSIGNED NOT NULL,
+    Content BLOB,
+    Due_Date DATETIME,
+    PRIMARY KEY(Assignment_ID), 
+    FOREIGN KEY (Category_ID) REFERENCES Assignment_Categories(Category_ID) ON DELETE CASCADE );
+
+CREATE TABLE Submissions(
+    Assignment_ID INT UNSIGNED NOT NULL,
+    uID CHAR(8) NOT NULL,
+    Submssion_Time DATETIME NOT NULL,
+    Content BLOB NOT NULL,
+    Points_Awarded INT UNSIGNED,
+    PRIMARY KEY(Assignment_ID, uID, Submssion_Time),
+    FOREIGN KEY (Assignment_ID) REFERENCES Assignments(Assignment_ID) ON DELETE CASCADE,
+    FOREIGN KEY (uID) REFERENCES Students(uID) );
